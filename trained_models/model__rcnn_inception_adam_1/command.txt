@@ -1,5 +1,9 @@
-python model_main.py \
-    --pipeline_config_path="/home/iaito/git/TableTrainNet/trained_models/model__rcnn_inception_adam/faster_rcnn_inception_v2_coco.config \
-    --model_dir="/home/iaito/git/TableTrainNet/trained_models/model__rcnn_inception_momentum_2" \
-    --num_train_steps=10000 \
-    --alsologtostderr
+# TRAIN THE NETWORK
+python model_main.py --pipeline_config_path="/home/iaito/git/TableTrainNet/trained_models/model__rcnn_inception_adam_1/faster_rcnn_inception_v2_coco.config" --model_dir="/home/iaito/git/TableTrainNet/trained_models/model__rcnn_inception_adam_1" --num_train_steps=10000 --alsologtostderr
+
+# PREPARE FROZEN GRAPH
+python export_inference_graph.py \
+--input_type=image_tensor \
+--pipeline_config_path=path/to/automatically/created/pipeline.config \
+--trained_checkpoint_prefix=path/to/last/model.ckpt-xxx \
+--output_directory=path/to/output/dir
