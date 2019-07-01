@@ -30,6 +30,7 @@ TF_TRAIN_RECORD_TO_PATH = os.path.join(MY_PATH + '/TableTrainNet/data')
 TF_TRAIN_RECORD_NAME = 'train_jpeg.record'
 
 #TF_TEST_RECORD_TO_PATH = os.path.join('C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\data')
+TF_TEST_RECORD_TO_PATH = os.path.join(MY_PATH + '/TableTrainNet/data')
 TF_TEST_RECORD_NAME = 'test_jpeg.record'
 ANNOTATIONS_EXTENSION = '.xml'
 IMAGES_EXTENSION = '.jpeg'

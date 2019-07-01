@@ -1,7 +1,7 @@
 from dataset_costants import TABLE_DICT
 
 #PATH_TO_LABELS = 'C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\data\\object-detection.pbtxt'
-PATH_TO_LABELS = '~/git/'
+PATH_TO_LABELS = '~/git/TableTrainNet/data/object-detection.pbtxt'
 #BMP_IMAGE_TEST_TO_PATH = 'C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\test'
 BMP_IMAGE_TEST_TO_PATH = '~/git/TableTrainNet/test'
 
