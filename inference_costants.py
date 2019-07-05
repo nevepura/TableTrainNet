@@ -1,9 +1,10 @@
 from dataset_costants import TABLE_DICT
+from dataset_costants import PATH_TO_PROJECT
 
 #PATH_TO_LABELS = 'C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\data\\object-detection.pbtxt'
-PATH_TO_LABELS = '/home/iaito/git/TableTrainNet/data/object-detection.pbtxt'
+PATH_TO_LABELS = PATH_TO_PROJECT + 'data/object-detection.pbtxt'
 #BMP_IMAGE_TEST_TO_PATH = 'C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\test'
-BMP_IMAGE_TEST_TO_PATH = '/home/iaito/git/TableTrainNet/test'
+BMP_IMAGE_TEST_TO_PATH = PATH_TO_PROJECT + 'test'
 
 NUM_CLASSES = 1
 
@@ -27,7 +28,7 @@ PATHS_TO_CKPTS = [
     # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_momentum_10k_jpg/frozen/frozen_inference_graph.pb',
     # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_momentum_optimizer_1batch/frozen/frozen_inference_graph.pb'
     #'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_adam_4/frozen/frozen_inference_graph.pb'
-    '/home/iaito/git/TableTrainNet/trained_models/model__rcnn_inception_adam_1/frozen/frozen_inference_graph.pb'
+    PATH_TO_PROJECT + 'trained_models/model__rcnn_inception_adam_1/frozen/frozen_inference_graph.pb'
 ]
 
 TEST_SCORES = [0.2, 0.4, 0.6, 0.8]

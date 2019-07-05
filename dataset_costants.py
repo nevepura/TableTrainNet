@@ -6,31 +6,32 @@ PATH_TO_{} are those path in which the programs read
 """
 DPI_EXTRACTION = 200
 
-MY_PATH = '/home/iaito/git'
+#MY_PATH = '/home/iaito/git'
+PATH_TO_PROJECT = '/home/iaito/git/TableTrainNet/'
 
 #PATH_TO_IMAGES = os.path.join('C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\dataset\\Images')
-PATH_TO_IMAGES = os.path.join(MY_PATH + '/TableTrainNet/dataset/Images')
+PATH_TO_IMAGES = os.path.join(PATH_TO_PROJECT + 'dataset/Images')
 
 
 #PATH_TO_ANNOTATIONS = os.path.join('C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\dataset\\Annotations')
-PATH_TO_ANNOTATIONS = os.path.join(MY_PATH + '/TableTrainNet/dataset/Annotations')
+PATH_TO_ANNOTATIONS = os.path.join(PATH_TO_PROJECT + 'dataset/Annotations')
 
 TRAIN_CSV_NAME = 'train_jpeg.csv'
 TEST_CSV_NAME = 'test_jpeg.csv'
 
 #TRAIN_CSV_TO_PATH = os.path.join('C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\data')
-TRAIN_CSV_TO_PATH = os.path.join(MY_PATH + '/TableTrainNet/data')
+TRAIN_CSV_TO_PATH = os.path.join(PATH_TO_PROJECT + 'data')
 
 #TEST_CSV_TO_PATH = os.path.join('C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\data')
-TEST_CSV_TO_PATH = os.path.join(MY_PATH + '/TableTrainNet/data')
+TEST_CSV_TO_PATH = os.path.join(PATH_TO_PROJECT + 'data')
 
 #TF_TRAIN_RECORD_TO_PATH = os.path.join('C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\data')
-TF_TRAIN_RECORD_TO_PATH = os.path.join(MY_PATH + '/TableTrainNet/data')
+TF_TRAIN_RECORD_TO_PATH = os.path.join(PATH_TO_PROJECT + 'data')
 
 TF_TRAIN_RECORD_NAME = 'train_jpeg.record'
 
 #TF_TEST_RECORD_TO_PATH = os.path.join('C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\data')
-TF_TEST_RECORD_TO_PATH = os.path.join(MY_PATH + '/TableTrainNet/data')
+TF_TEST_RECORD_TO_PATH = os.path.join(PATH_TO_PROJECT + 'data')
 TF_TEST_RECORD_NAME = 'test_jpeg.record'
 ANNOTATIONS_EXTENSION = '.xml'
 IMAGES_EXTENSION = '.jpeg'
