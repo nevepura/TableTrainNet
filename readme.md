@@ -71,6 +71,23 @@ Use `python generate_tf_records.py` to create the train and test`.record` files 
 `dataset_costants.py`
 
 #### Train the network
+
+Step 1: importare un modello pre-allenato
+Andare in [Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
+dove ci sono dei modelli frozen pre-allenati di reti.
+Scarica quelli interessanti e li salvi nella cartella `trained_nets`: quindi in questa cartella ci sono i modelli pre-allenati.
+
+Step 2: 
+Andare in trained_models e creare una nuova cartella con nome a piacere, dove scrivi due file:
+* command.txt
+* il file di configurazione, per esempio `faster_rcnn_inception_v2_coco.config`. Occhio che dentro ci sono alcune cose da settare, non solo i percorsi. Il fine tuning si prende dal modello frozen. Si possono scegliere altri parametri, come la batch size e l'optimizer.
+* in questo step, tra i file che vengono generati, c'è anche `pipeline.config`, che viene usato allo step successivo
+* una volta settati questi file puoi passare allo step 3
+
+Step 3: lanciare il train con il file dentro la repo di TensorFlow
+
+Step 4: puoi esportare il grafo da utilizzare per i test. Questa parte è stata fatta in fretta, quindi non si capisce bene.
+
 Inside `trained_models` there are some folders. In each one there are two files, a `.config` and a `.txt` one.
 The first contains a tensorflow configuration, that has to be personalized:
 * `fine_tune_checkpoint`: path to the frozen graph from pre-trained tensorflow models networks;
