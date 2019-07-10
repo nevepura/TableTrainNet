@@ -79,7 +79,7 @@ Scarica quelli interessanti e li salvi nella cartella `trained_nets`: quindi in 
 
 Step 2: 
 Andare in trained_models e creare una nuova cartella con nome a piacere, dove scrivi due file:
-* command.txt
+* `command.txt`
 * il file di configurazione, per esempio `faster_rcnn_inception_v2_coco.config`. Occhio che dentro ci sono alcune cose da settare, non solo i percorsi. Il fine tuning si prende dal modello frozen. Si possono scegliere altri parametri, come la batch size e l'optimizer.
 * in questo step, tra i file che vengono generati, c'è anche `pipeline.config`, che viene usato allo step successivo
 * una volta settati questi file puoi passare allo step 3
