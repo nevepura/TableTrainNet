@@ -65,7 +65,7 @@ def create_tf_example(group, path):
     """
     # looking for filename image of csv in path folder
     logger.debug('Now creating a single-page tf_example...')
-    with tf.gfile.GFile(os.path.join(path, '{}'.format(group.filename)), 'rb') as fid:
+    with tf.io.gfile.GFile(os.path.join(path, '{}'.format(group.filename)), 'rb') as fid:
         encoded_jpeg = fid.read()
         logger.debug('Image found in {}'.format(path))
     # encode it as a pillow image
@@ -115,7 +115,7 @@ def main(_):
     # write train record:
     csv_input = os.path.join(TRAIN_CSV_TO_PATH, TRAIN_CSV_NAME)
     output_path = os.path.join(TF_TRAIN_RECORD_TO_PATH, TF_TRAIN_RECORD_NAME)
-    writer = tf.python_io.TFRecordWriter(output_path)
+    writer = tf.io.TFRecordWriter(output_path)
     path = os.path.join(os.getcwd(), PATH_TO_IMAGES)
     # examples is the csv file
     examples = pd.read_csv(csv_input)
@@ -132,7 +132,7 @@ def main(_):
     # write test record:
     csv_input = os.path.join(TEST_CSV_TO_PATH, TEST_CSV_NAME)
     output_path = os.path.join(TF_TEST_RECORD_TO_PATH, TF_TEST_RECORD_NAME)
-    writer = tf.python_io.TFRecordWriter(output_path)
+    writer = tf.io.TFRecordWriter(output_path)
     path = os.path.join(os.getcwd(), PATH_TO_IMAGES)
     examples = pd.read_csv(csv_input)
     grouped = split(examples, 'filename')
@@ -146,4 +146,4 @@ def main(_):
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()
