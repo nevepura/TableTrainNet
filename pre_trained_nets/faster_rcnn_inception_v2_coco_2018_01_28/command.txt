@@ -1,4 +1,4 @@
-python model_main.py --pipeline_config_path="/home/iaito/git/TableTrainNet/model/faster_rcnn_inception_v2_coco.config" --model_dir="/home/iaito/git/TableTrainNet/model" --num_train_steps=1000 --num_eval_steps=500 --eval_dir="/home/iaito/git/TableTrainNet/eval" --alsologtostderr
+python model_main.py --pipeline_config_path="/home/iaito/git/TableTrainNet/trained_models/faster_rcnn_inception_v2_coco_NUMBER/myconfig.config" --model_dir="/home/iaito/git/TableTrainNet/trained_models/faster_rcnn_inception_v2_coco_NUMBER" --num_train_steps=1000 --num_eval_steps=500 --eval_dir="/home/iaito/git/TableTrainNet/eval" --alsologtostderr
 
 
 TO EXPORT MODEL:
