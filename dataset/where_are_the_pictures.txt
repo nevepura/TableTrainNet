@@ -1,0 +1,3 @@
+The images used to train the networks in this project are part of the TableBank dataset
+The part is the one that can be found in the original TableBank dataset archive, at path: "TableBank/TableBank_data/Detection_data"
+The files contained in the folder "Recognition_data" were not used, because as far as i know, their use is to understand tables structure, not detecting their borders. Look at the readme of TableBank on github to better understand.
