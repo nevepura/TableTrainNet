@@ -13,16 +13,15 @@ PATH_TO_ANNOTATIONS = os.path.dirname(os.path.abspath("dataset/Annotations"))
 TRAIN_CSV_NAME = 'train_jpeg.csv'
 TEST_CSV_NAME = 'test_jpeg.csv'
 
-TRAIN_CSV_TO_PATH = os.path.dirname(os.path.abspath("data"))
+TRAIN_CSV_TO_PATH = os.path.abspath("data")
+TEST_CSV_TO_PATH = os.path.abspath("data")
 
-TEST_CSV_TO_PATH = os.path.dirname(os.path.abspath("data"))
-
-TF_TRAIN_RECORD_TO_PATH = os.path.dirname(os.path.abspath("data"))
-
+TF_TRAIN_RECORD_TO_PATH = os.path.abspath("data")
 TF_TRAIN_RECORD_NAME = 'train_jpeg.record'
 
 TF_TEST_RECORD_TO_PATH = os.path.dirname(os.path.abspath("data"))
 TF_TEST_RECORD_NAME = 'test_jpeg.record'
+
 ANNOTATIONS_EXTENSION = '.xml'
 IMAGES_EXTENSION = '.jpeg'
 
