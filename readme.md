@@ -37,6 +37,27 @@ This will also be useful later to train your model, since all the training files
 ## Project pipeline
 The project is made up of different parts that acts together as a pipeline.
 
+###Disclaimer: on pictures and annotations
+The project hosted here contains the annotations, but not the pictures.
+It won't work unless you load the correct pictures, which are contained in the TableBank dataset, 
+in the folder `TableBank_data/Detection_data`.
+In alternative, you can load your own dataset and your own annotations.
+Make sure that the annotations have the same format as the current ones.
+An example here:
+```angular2html
+<?xml version='1.0' encoding='UTF-8'?>
+<document filename="1401.0007_15">
+  <tableRegion>
+    <Coords points="85,396 510,396 85,495 510,495" />
+  </tableRegion>
+  <tableRegion>
+    <Coords points="50,400 510,400 50,495 510,495" />
+  </tableRegion>
+</document>
+```
+Notice that the coordinates of the points come in this order:
+`x0, y0, x1, y0, x0, y1, x1, y1`
+
 #### Take confidence with costants
 I have prepared two "costants" files: `dataset_costants.py` and `inference_constants.py`.
 The first contains all those costants that are useful to use to create dataset, the second to make
