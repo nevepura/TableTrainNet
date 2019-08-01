@@ -1,35 +1,9 @@
-from dataset_costants import TABLE_DICT
+import os
 
-#PATH_TO_LABELS = 'C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\data\\object-detection.pbtxt'
-PATH_TO_LABELS = '/home/iaito/git/TableTrainNet/data/object-detection.pbtxt'
-#BMP_IMAGE_TEST_TO_PATH = 'C:\\Users\\giova\\Documents\\PyCharmProjects\\TableTrainNet\\test'
-BMP_IMAGE_TEST_TO_PATH = '/home/iaito/git/TableTrainNet/test'
-
-NUM_CLASSES = 1
-
-PATHS_TO_TEST_IMAGE = [
-    'test/test1.png',
-    'test/test2.png',
-    'test/test3.png',
-    'test/test4.png',
-    'test/test5.png',
-    'test/test6.png',
-    'test/test7.png'
-]
-
-PATHS_TO_CKPTS = [
-    # 'data/',
-    # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_momentum_optimizer_1batch/frozen/frozen_inference_graph.pb',
-    # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_adam_1/frozen/frozen_inference_graph.pb',
-    # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_adam_2/frozen/frozen_inference_graph.pb',
-    # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_adam_3/frozen/frozen_inference_graph.pb',
-    # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_momentum_1/frozen/frozen_inference_graph.pb',
-    # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_momentum_10k_jpg/frozen/frozen_inference_graph.pb',
-    # 'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_momentum_optimizer_1batch/frozen/frozen_inference_graph.pb'
-    #'C:/Users/giova/Documents/PycharmProjects/TableTrainNet/trained_models/model__rcnn_inception_adam_4/frozen/frozen_inference_graph.pb'
-    '/home/iaito/git/TableTrainNet/trained_models/model__rcnn_inception_adam_1/frozen/frozen_inference_graph.pb'
-]
-
+PATH_TO_GRAPH = os.path.abspath('trained_models/adam2_tb/frozen_adam2_tb/frozen_inference_graph.pb')
 TEST_SCORES = [0.2, 0.4, 0.6, 0.8]
-
+NUM_CLASSES = 1
+PATH_TO_LABELS = os.path.abspath('data/object-detection.pbtxt')
 MAX_NUM_BOXES = 10
+PATH_TO_TEST_IMAGES_INPUT_FOLDER = "test/input"
+PATH_TO_TEST_IMAGES_OUTPUT_FOLDER = "test/output"

@@ -1,6 +1,6 @@
 """
 In this file the user can test some models and some other configurations for finding tables into some documents.
-It takes the test images from PATHS_TO_TEST_IMAGE, the models from PATHS_TO_CKPTS, the evaluation scores from TEST_SCORES
+It takes the test images from PATHS_TO_TEST_IMAGE, the models from PATHS_TO_GRAPHS, the evaluation scores from TEST_SCORES
 and the number of classes from NUM_CLASSES.
 # How the pipeline works
 ## Only bmp 3-channel allowed
@@ -33,7 +33,7 @@ We can assume this is a general behaviour. So we can take only the y_min and y_m
 
 
 In addition we can see a table as a set of sub-tables, so we can assume that the NN would see it in the same way. For this reason I've created the function
-`keep_best_boxes`. This function takes the best boxes over SCORE score. As the boxes are ordered by higher score, we append the first one to the list
+`keep_best_boxes`. This function takes the best boxes over score score. As the boxes are ordered by higher score, we append the first one to the list
 we want to return. Then we see if the second one is vertically overlapping the first one. If not, we append the box to the returning list. If so,
 we take the minor y_min and the x_max coordinate between the two and we create a "merged" box. Then we check if this new box is overlapping some of the
 previous one recursively.
@@ -44,55 +44,25 @@ This two assumptions let us considering more boxes and with very low scores to m
 ### Let's draw!
 
 With the new boxes and their scores - even if not precise because of merged one - we can the boxes found.
-This script provides some for loops over all the PATS_TO_TEST_IMAGE for every TEST_SCORES and every PATHS_TO_CKPTS that are present in
+This script provides some for loops over all the PATS_TO_TEST_IMAGE for every TEST_SCORES and every PATHS_TO_GRAPHS that are present in
 inference_costants.py. They are written in TEST_PATH and every folder will have the name of the bmp image you put as test.
 
 """
 import numpy as np
 import os
 import tensorflow as tf
-import errno
 import copy
 from PIL import Image
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 from inference_costants import \
-    PATHS_TO_TEST_IMAGE, \
-    PATHS_TO_CKPTS, \
+    PATH_TO_GRAPH, \
     TEST_SCORES, \
     NUM_CLASSES, \
     PATH_TO_LABELS, \
-    BMP_IMAGE_TEST_TO_PATH, \
-    MAX_NUM_BOXES
-
-TEST_IMAGE_PATHS = PATHS_TO_TEST_IMAGE
-PATH_TO_CKPTs = PATHS_TO_CKPTS
-SCORES = TEST_SCORES
-
-
-def from_png_to_bmp(png_path, output_path=BMP_IMAGE_TEST_TO_PATH):
-    """
-    Convert a png_path image into a bmp 3-channel one and return the path to the converted image
-    :param png_path: path of the image
-    :param output_path: path in which we save the image
-    :return: the file path
-    """
-    # convert a .png image file to a .bmp image file using PIL
-    file_name = os.path.splitext(png_path)[0] \
-        .split("/")[-1]
-    file_in = png_path
-    img = Image.open(file_in)
-
-    file_out = os.path.join(output_path, str(file_name), str(file_name) + '.bmp')
-    len(img.split())  # test
-    if len(img.split()) == 4:
-        # prevent IOError: cannot write mode RGBA as BMP
-        r, g, b, a = img.split()
-        img = Image.merge("RGB", (r, g, b))
-        img.save(file_out)
-    else:
-        img.save(file_out)
-    return file_out
+    MAX_NUM_BOXES, \
+    PATH_TO_TEST_IMAGES_INPUT_FOLDER, \
+    PATH_TO_TEST_IMAGES_OUTPUT_FOLDER
 
 
 def check_if_vertically_overlapped(coord_a, coord_b):
@@ -254,243 +224,165 @@ def load_image_into_numpy_array(image):
         (im_height, im_width, 3)).astype(np.uint8)
 
 
-# np_array = np.array(image.getdata()).reshape((im_height, im_width, 1)).astype(np.uint8)
-# np_array = np.concatenate((np_array, zeros), axis=2)
-# print(np_array.size)
-# print('ciao')
-# return np_array
+def ensure_dir(file_path):
+    '''Creates directories for file path if it doesn't exist'''
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
+
+def list_files():
+    '''lists all files in the path folder and subfolders'''
+    path = PATH_TO_TEST_IMAGES_INPUT_FOLDER
+    files = []
+    # r=root, d=directories, f = files
+    for r, d, f in os.walk(path):
+
+        for file in f:
+            files.append(os.path.join(r, file))
+    print(files)
+    return files
+
+
+def draw_and_write_filtered_file(treshold, scores, image, boxes, file_name, graph_name):
+    '''Copies original image, draws boxes > treshold, writes new image on output'''
+    i = 0
+    coords = []
+    while scores[i] > treshold:
+        coord = {
+            'y_min': boxes[i][0],
+            'x_min': boxes[i][1],
+            'y_max': boxes[i][2],
+            'x_max': boxes[i][3]
+        }
+        coords.append(coord)
+        i += 1
+    i = 0
+    new_image = copy.deepcopy(image)
+    for coord in coords:
+        vis_util.draw_bounding_box_on_image(
+            new_image,
+            coord['y_min'],
+            coord['x_min'],
+            coord['y_max'],
+            coord['x_max'],
+            vis_util.STANDARD_COLORS[10 + i],
+            thickness=4
+        )
+        i += 1
+
+    path = os.path.join(PATH_TO_TEST_IMAGES_OUTPUT_FOLDER, str(file_name),
+                        str(file_name) + '_filtered_' + str(treshold) + '_' + str(graph_name) + '.bmp')
+    ensure_dir(path)
+    new_image.save(path)
+
+
+def draw_and_write_merged_file(boxes, scores, score, image, file_name, graph_name):
+    ''' Merge the best vertical overlapping boxes'''
+
+    best_boxes, best_scores = keep_best_boxes(
+        boxes=boxes,
+        scores=scores,
+        max_num_boxes=MAX_NUM_BOXES,
+        min_score=score
+    )
+    coords = []
+    # print(best_boxes)
+    if best_boxes == []:
+        print('No boxes found')
+    else:
+        # there are some boxes
+        for box in best_boxes:
+            coord = {
+                'y_min': box[0],
+                'x_min': box[1],
+                'y_max': box[2],
+                'x_max': box[3]
+            }
+            coords.append(coord)
+
+        new_image = copy.deepcopy(image)
+        merged = 0
+        # draw
+        for coord in coords:
+            vis_util.draw_bounding_box_on_image(
+                new_image,
+                coord['y_min'],
+                0,
+                coord['y_max'],
+                1,
+                color='red',
+                thickness=4
+            )
+            merged += 1
+        # save
+        path = os.path.join(PATH_TO_TEST_IMAGES_OUTPUT_FOLDER, str(file_name),
+                            "{fn}_merged_{sc}_{gn}.bmp".format(fn=file_name, sc=score,
+                                                               gn=graph_name))
+        ensure_dir(path)
+        new_image.save(path)
+        print('{} box merged from found!'.format(merged))
+
+
+def main():
+    TEST_BMP_PATHS = list_files()
+    print(TEST_BMP_PATHS)
+
+    graph_name = str(PATH_TO_GRAPH.split('/')[-1])
+    print(graph_name)
+
+    for test_path in TEST_BMP_PATHS:
+        file_name = os.path.splitext(test_path)[0].split("/")[-1]
+
+        # LOADING THE GRAPH: SHOULD-NOT-BE-TOUCHED PART
+        detection_graph = tf.Graph()
+        with detection_graph.as_default():
+            # other TF commands
+            od_graph_def = tf.compat.v1.GraphDef()
+            with tf.io.gfile.GFile(PATH_TO_GRAPH, 'rb') as fid:
+                serialized_graph = fid.read()
+                od_graph_def.ParseFromString(serialized_graph)
+                tf.import_graph_def(od_graph_def, name='')
+
+        # load label map
+        label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
+        categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES,
+                                                                    use_display_name=True)
+
+        # DETECTION: THE NICE PART
+        with detection_graph.as_default():
+            with tf.compat.v1.Session(graph=detection_graph) as sess:
+                image = Image.open(test_path)
+                image.convert()
+                # the array based representation of the image will be used later in order to prepare the
+                # result image with boxes and labels on it.
+                image_np = load_image_into_numpy_array(image)
+                # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
+                image_np_expanded = np.expand_dims(image_np, axis=0)
+                image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+                # Each box represents a part of the image where a particular object was detected.
+                boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+                # Each score represent how level of confidence for each of the objects.
+                # Score is shown on the result image, together with the class label.
+                scores = detection_graph.get_tensor_by_name('detection_scores:0')
+                classes = detection_graph.get_tensor_by_name('detection_classes:0')
+                num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+                # Actual detection.
+                (boxes, scores, classes, num_detections) = sess.run(
+                    [boxes, scores, classes, num_detections],
+                    feed_dict={image_tensor: image_np_expanded})
+
+                # scores[0][0]=score of first box
+                boxes = boxes[0]
+                scores = scores[0]
+
+                # WE KNOW OUR DATA: SOME ASSUMPTIONS AND HOW TO MAKE PROFIT FROM THEM
+                for score in TEST_SCORES:
+                    draw_and_write_merged_file(boxes, scores, score, image, file_name, graph_name)
+
+                tresholds = [0.2, 0.4, 0.6, 0.8]
+                for treshold in tresholds:
+                    draw_and_write_filtered_file(treshold, scores, image, boxes, file_name, graph_name)
 
 if __name__ == '__main__':
-    TEST_BMP_PATHS = []
-    # ONLY BMP 3-CHANNEL ALLOWED
-    # make a list of the paths to the bmp files. See description at the top.
-    for test_path in TEST_IMAGE_PATHS:
-        file_name = os.path.splitext(test_path)[0] \
-            .split("/")[-1]
-
-        try:
-            if not os.path.isdir(file_name):
-                os.makedirs(os.path.join(BMP_IMAGE_TEST_TO_PATH, file_name))
-        except OSError as exc:  # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                # logger.warning('Parent folder was not created correctly. Probably already present')
-                raise
-
-        file_path = from_png_to_bmp(
-            png_path=test_path,
-            output_path=BMP_IMAGE_TEST_TO_PATH
-        )
-
-        TEST_BMP_PATHS.append(file_path)
-
-    for PATH_TO_CKPT in PATH_TO_CKPTs:
-        graph_name = os.path.splitext(PATH_TO_CKPT)[0].split("/")[-3]  # take the name of the graph for renaming reasons
-        graph_name = graph_name.replace("model__rcnn_inception_", "")  # the name was too long :)
-        # since the frozen script makes the frozen graph always at the same place
-        # PATH_TO_CKPT = PATH_TO_CKPT + '/frozen/frozen_inference_graph.pb'
-        for test_path in TEST_BMP_PATHS:
-            file_name = os.path.splitext(test_path)[0] \
-                .split("\\")[-1]
-
-            # LOADING THE GRAPH: SHOULD-NOT-BE-TOUCHED PART
-            detection_graph = tf.Graph()
-            with detection_graph.as_default():
-                # other TF commands
-                od_graph_def = tf.GraphDef()
-                with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
-                    serialized_graph = fid.read()
-                    od_graph_def.ParseFromString(serialized_graph)
-                    tf.import_graph_def(od_graph_def, name='')
-
-            # load label map
-            label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-            categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES,
-                                                                        use_display_name=True)
-            category_index = label_map_util.create_category_index(categories)
-
-            # DETECTION: THE NICE PART
-
-            with detection_graph.as_default():
-                with tf.Session(graph=detection_graph) as sess:
-                    image = Image.open(test_path)
-                    image.convert()
-                    # the array based representation of the image will be used later in order to prepare the
-                    # result image with boxes and labels on it.
-                    image_np = load_image_into_numpy_array(image)
-                    # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
-                    image_np_expanded = np.expand_dims(image_np, axis=0)
-                    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-                    # Each box represents a part of the image where a particular object was detected.
-                    boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-                    # Each score represent how level of confidence for each of the objects.
-                    # Score is shown on the result image, together with the class label.
-                    scores = detection_graph.get_tensor_by_name('detection_scores:0')
-                    classes = detection_graph.get_tensor_by_name('detection_classes:0')
-                    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-                    # Actual detection.
-                    (boxes, scores, classes, num_detections) = sess.run(
-                        [boxes, scores, classes, num_detections],
-                        feed_dict={image_tensor: image_np_expanded})
-
-                    # print('boxes: ', boxes[0])		# boxes[0][0][0]=ymin, boxes[0][0][1]=xmin, boxes[0][0][2]=ymax, boxes[0][0][3]=xmax
-                    print('scores', scores[0])  # scores[0][0]=score of first box
-                    # print('classes', classes[0])
-                    # print('num_detections', num_detections)
-                    # print(type(scores[0]))
-                    # scores = list(scores)
-                    # print(type(scores))
-
-                    boxes = boxes[0]
-                    scores = scores[0]
-
-                    # WE KNOW OUR DATA: SOME ASSUMPTIONS AND HOW TO MAKE PROFIT FROM THEM
-
-                    for SCORE in SCORES:
-                        # we merge the best vertical overlapping boxes
-                        best_boxes, best_scores = keep_best_boxes(
-                            boxes=boxes,
-                            scores=scores,
-                            max_num_boxes=MAX_NUM_BOXES,
-                            min_score=SCORE
-                        )
-                        coords = []
-                        # print(best_boxes)
-                        if not best_boxes == []:
-                            for box in best_boxes:
-                                # print('prima')
-                                # print(box[0])
-                                coord = {
-                                    'y_min': box[0],
-                                    'x_min': box[1],
-                                    'y_max': box[2],
-                                    'x_max': box[3]
-                                }
-                                # print('What''s happening here?')
-                                coords.append(coord)
-                            # print(coords)
-                            # print(boxes[0][0][0], boxes[0][0][1], boxes[0][0][2], boxes[0][0][3])
-                            # image1 = copy.deepcopy(image)
-                            # image2 = copy.deepcopy(image)
-                            new_image = copy.deepcopy(image)
-                            merged = 0
-                            for coord in coords:
-                                vis_util.draw_bounding_box_on_image(
-                                    new_image,
-                                    coord['y_min'],
-                                    0,
-                                    coord['y_max'],
-                                    1,
-                                    color='red',
-                                    # vis_util.STANDARD_COLORS[i*2],
-                                    thickness=4
-                                )
-                                merged += 1
-                            path = os.path.join(BMP_IMAGE_TEST_TO_PATH, str(file_name),
-                                                "{fn}_merged_{sc}_{gn}.bmp".format(fn=file_name, sc=SCORE,
-                                                                                   gn=graph_name))
-                            new_image.save(path)
-                            print('{} box merged from found!'.format(merged))
-                        else:
-                            print('No boxes found')
-
-                    i = 0
-                    coords = []
-                    while scores[i] > 0.2:
-                        # print('prima')
-                        # print(box[0])
-                        coord = {
-                            'y_min': boxes[i][0],
-                            'x_min': boxes[i][1],
-                            'y_max': boxes[i][2],
-                            'x_max': boxes[i][3]
-                        }
-                        # print('What''s happening here?')
-                        coords.append(coord)
-                        i += 1
-                    # print(coords)
-                    # print(boxes[0][0][0], boxes[0][0][1], boxes[0][0][2], boxes[0][0][3])
-                    # image1 = copy.deepcopy(image)
-                    # image2 = copy.deepcopy(image)
-                    i = 0
-                    new_image = copy.deepcopy(image)
-                    for coord in coords:
-                        vis_util.draw_bounding_box_on_image(
-                            new_image,
-                            coord['y_min'],
-                            coord['x_min'],
-                            coord['y_max'],
-                            coord['x_max'],
-                            # color='red',
-                            vis_util.STANDARD_COLORS[10 + i],
-                            thickness=4
-                        )
-                        i += 1
-                        print(str(i) + ' new box')
-                    new_image.save(os.path.join(BMP_IMAGE_TEST_TO_PATH, str(file_name),
-                                                str(file_name) + '_filtered_0.2_' + str(graph_name) + '.bmp'))
-
-                    i = 0
-                    coords = []
-                    while scores[i] > 0.4:
-                        # print('prima')
-                        # print(box[0])
-                        coord = {
-                            'y_min': boxes[i][0],
-                            'x_min': boxes[i][1],
-                            'y_max': boxes[i][2],
-                            'x_max': boxes[i][3]
-                        }
-                        # print('What''s happening here?')
-                        coords.append(coord)
-                        i += 1
-
-                    i = 0
-                    new_image = copy.deepcopy(image)
-                    for coord in coords:
-                        vis_util.draw_bounding_box_on_image(
-                            new_image,
-                            coord['y_min'],
-                            coord['x_min'],
-                            coord['y_max'],
-                            coord['x_max'],
-                            # color='red',
-                            vis_util.STANDARD_COLORS[10 + i],
-                            thickness=4
-                        )
-                        i += 1
-                        print(str(i) + ' new box')
-                    new_image.save(os.path.join(BMP_IMAGE_TEST_TO_PATH, str(file_name),
-                                                str(file_name) + '_filtered_0.4_' + str(graph_name) + '.bmp'))
-
-                    i = 0
-                    coords = []
-                    while scores[i] > 0.6:
-                        # print('prima')
-                        # print(box[0])
-                        coord = {
-                            'y_min': boxes[i][0],
-                            'x_min': boxes[i][1],
-                            'y_max': boxes[i][2],
-                            'x_max': boxes[i][3]
-                        }
-                        # print('What''s happening here?')
-                        coords.append(coord)
-                        i += 1
-                    i = 0
-                    new_image = copy.deepcopy(image)
-                    for coord in coords:
-                        vis_util.draw_bounding_box_on_image(
-                            new_image,
-                            coord['y_min'],
-                            coord['x_min'],
-                            coord['y_max'],
-                            coord['x_max'],
-                            # color='red',
-                            vis_util.STANDARD_COLORS[10 + i],
-                            thickness=4
-                        )
-                        i += 1
-                        print(str(i) + ' new box')
-                    new_image.save(os.path.join(BMP_IMAGE_TEST_TO_PATH, str(file_name),
-                                                str(file_name) + '_filtered_0.6_' + str(graph_name) + '.bmp'))
+    main()

@@ -1,7 +1,9 @@
 # TableTrainNet
 ## A simple project for training and testing table recognition in documents.
-This project was developed to make a neural network which recognizes tables inside documents.
-I needed an "intelligent" ocr for work, which could automatically recognize tables to treat them separately.
+This project was developed to train a neural network to detect tables inside documents.
+Once the model is trained, it can be used in
+[IntelligentOCR](https://github.com/nevepura/IntelligentOCR)
+to detect tables.
 
 ## General overview
 The project uses the pre-trained neural network 
@@ -12,12 +14,9 @@ file was used, according to the choosen pre-trained model, to train with
 [object detections tensorflow API](https://github.com/tensorflow/models/tree/master/research/object_detection#tensorflow-object-detection-api)
 
 The datasets was taken from:
-* [ICDAR 2017 POD Competition](http://www.icst.pku.edu.cn/cpdp/ICDAR2017_PODCompetition/dataset.html).
-* Not already implemented:
-    * [UNLV dataset](https://github.com/tesseract-ocr/tesseract/wiki/UNLV-Testing-of-Tesseract#downloading-the-images)
-    with its own
-    [ground truth](http://www.iapr-tc11.org/mediawiki/index.php?title=Table_Ground_Truth_for_the_UW3_and_UNLV_datasets);
-    * [Marmot Dataset](http://www.icst.pku.edu.cn/cpdp/data/marmot_data.htm)
+* [TableBank](https://github.com/doc-analysis/TableBank).
+Only part of the dataset was used. Which part? The one contained in the folder "TableBank/TableBank_data/Detection_data", which had a proper annotation. The pictures from "Recognition_data" had no convenient annotations, since they are intended to understand the structure of a table, and not its frame. 
+Note that the dataset is not freely available, because copyright. If you want it, apply to request it on TableBank github page.
 
 ## Required libraries
 Before we go on make sure you have everything installed to be able to use the project:
@@ -29,6 +28,11 @@ Before we go on make sure you have everything installed to be able to use the pr
 * opencv-python
 * pandas
 * pyprind (useful for process bars)
+
+Notice: to complete the installation of the Coco API, you will have to clone the
+[tensorflow/models](https://github.com/tensorflow/models).
+This will also be useful later to train your model, since all the training files lie in tensorflow/models.
+
 
 ## Project pipeline
 The project is made up of different parts that acts together as a pipeline.
@@ -49,8 +53,12 @@ Use `python dataset/img_to_jpeg.py` after setting `dataset_costants.py`:
 
 #### Prepare the dataset for Tensorflow
 The dataset was take from 
-[ICDAR 2017 POD Competition](http://www.icst.pku.edu.cn/cpdp/ICDAR2017_PODCompetition/dataset.html)
-. It comes with a `xml` notation file with formulas, images and tables per image.
+[TableBank](https://github.com/doc-analysis/TableBank).
+It's a huge dataset apt to table detection (detect tables existance and borders)
+and table recognition (understand table structure, heading, cells and so on).
+It comes with a huge file of .json annotations: this has been transformed many .xml annotation files,
+equal to the old annotations of this project.
+
 Tensorflow instead can build its own TFRecord from csv informations, so we need to convert
 the `xml` files into a `csv` one.
 Use `python dataset/generate_database_csv.py` to do this conversion after setting `dataset_costants.py`:
@@ -71,43 +79,53 @@ Use `python generate_tf_records.py` to create the train and test`.record` files 
 `dataset_costants.py`
 
 #### Train the network
+This part can be a little tricky. Let's divide it in steps.
 
-Step 1: importare un modello pre-allenato
-Andare in [Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
-dove ci sono dei modelli frozen pre-allenati di reti.
-Scarica quelli interessanti e li salvi nella cartella `trained_nets`: quindi in questa cartella ci sono i modelli pre-allenati.
 
-Step 2: 
-Andare in trained_models e creare una nuova cartella con nome a piacere, dove scrivi due file:
-* `command.txt`
-* il file di configurazione, per esempio `faster_rcnn_inception_v2_coco.config`. Occhio che dentro ci sono alcune cose da settare, non solo i percorsi. Il fine tuning si prende dal modello frozen. Si possono scegliere altri parametri, come la batch size e l'optimizer.
-* in questo step, tra i file che vengono generati, c'è anche `pipeline.config`, che viene usato allo step successivo
-* una volta settati questi file puoi passare allo step 3
+#####Step 1: importing a pre-trained model
+Look in [Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
+where there are pre-trained models for you to use.
+All the info about how to configure and start a model can be found
+[here](https://github.com/tensorflow/models/tree/master/research/object_detection)
+First of all, choose a model, download it and save it in the folder `trained_nets`, where are your pre-trained models will be.
 
-Step 3: lanciare il train con il file dentro la repo di TensorFlow
+#####Step 2: create you model
+Go to trained_models and create a new folder with the name you prefer.
+Create two files inside it:
+* `command.txt`: here you will write the commands useful to start the training and export the graph
+* `myconfig.config`: this is a config file. You can find some examples
+[here](https://github.com/tensorflow/models/tree/master/research/object_detection/samples/configs).
+Be careful to choose the correct config for your network.
+There are a few that you must to set to set in the config. 
+* `fine_tune_checkpoint`: this is the path to the `model.ckpt` file of the frozen graph.
+* `input_path`x2: path to the record files `train_jpeg.record` and `test_jpeg.record` we made before
+* `label_path`x2: path to the labels contained in the file `object-detection.pbtxt`.
 
-Step 4: puoi esportare il grafo da utilizzare per i test. Questa parte è stata fatta in fretta, quindi non si capisce bene.
+Other parameters can be chosen. It's not very clear how to do it: you can find little info
+[here](https://github.com/tensorflow/models/tree/master/research/object_detection/protos)
+Once you've done your config, you can go to step 3.
 
-Inside `trained_models` there are some folders. In each one there are two files, a `.config` and a `.txt` one.
-The first contains a tensorflow configuration, that has to be personalized:
-* `fine_tune_checkpoint`: path to the frozen graph from pre-trained tensorflow models networks;
-* `tf_record_input_reader`: path to the `train.record` and `test.record` file we created before;
-* `label_map_path`: path to the labels of your dataset.
-
-The latter contains the command to launch from `tensorflow/models/research/object-detection`
-and follows this pattern:
+#####Step 3: train your network
+Write this command in the `command` file to reuse it. 
+Example of the command to launch from `tensorflow/models/research/object-detection`
 ```angular2html
 python model_main.py \
---pipeline_config_path=path/to/your_config_file.config \
---model_dir=here/we/save/our/model" \ 
---num_train_steps=num_of_iterations \
+--pipeline_config_path="path/to/your/myconfig.config" \
+--model_dir="path where you save your model, its nice if it is the same folder of myconfig.config" \
+--num_train_steps=10000 \
+--num_eval_steps=500 \
 --alsologtostderr
 ```
 Other options are inside `tensorflow/models/research/object-detection/model_main.py`
+Notice: the paths must be your local paths
+Notice: if you have already trained this network,
+num_train_steps must be > of the steps the network has been trained already.
 
-#### Prepare frozen graph
-When the net has finished the training, you can export a frozen graph to make inference.
-Tensorflow offers the utility: from `tensorflow/models/research/object-detection` run:
+Monitor the training with [Tensorboard](https://www.tensorflow.org/guide/summaries_and_tensorboard)
+to check how it is going.
+
+#### Export the graph
+Use the command, from `tensorflow/models/research/object_detection`: 
 ```angular2html
 python export_inference_graph.py \ 
 --input_type=image_tensor \
@@ -119,22 +137,23 @@ python export_inference_graph.py \
 #### Test your graph!
 Now that you have your graph you can try it out:
 Run `inference_with_net.py` and set `inference_costants.py`:
-* `PATHS_TO_TEST_IMAGE`: path list to all the test images;
-* `BMP_IMAGE_TEST_TO_PATH`: path to which save test output files;
-* `PATHS_TO_LABELS`: path to `.pbtxt` label file;
-* `MAX_NUM_BOXES`: max number of boxes to be considered;
-* `MIN_SCORE`: minimum score of boxes to be considered;
+* PATH_TO_GRAPH = os.path.abspath('trained_models/adam2_tb/frozen_adam2_tb/frozen_inference_graph.pb')
+* TEST_SCORES: it's already set.
+* NUM_CLASSES = the number of classes to detect. In our case it's 1. It's already set
+* PATH_TO_LABELS = path to `.pbtxt` label file;
+* MAX_NUM_BOXES = max number of boxes to be considered;
+* PATH_TO_TEST_IMAGES_INPUT_FOLDER: take the input here to apply inference
+* PATH_TO_TEST_IMAGES_OUTPUT_FOLDER the output images go here
 
-Then it will be generated a result image for every combination of:
-* `PATHS_TO_CKPTS`: list path to all frozen graph you want to test;
+The output will be a set of images with boxes drawn on it representing the inferred tables,
+one image for each score.
 
 In addition it will print a "merged" version of the boxes, in which
 all the best vertically overlapping boxes are merged together to gain accuracy. `TEST_SCORES` is a list of
 numbers that tells the program which scores must be merged together.
 
 The procedure is better described in `inference_with_net.py`.
-
-For every execution a `.log` file will be produced.
+For every execution a `.log` file will be produced and put in `logs`.
 
 
 ## Common issues while installing Tensorflow models
@@ -145,4 +164,3 @@ comment will probably solve your problem.
 ### Windows build and python3 support for COCO API dataset
 [This](https://github.com/philferriere/cocoapi)
 clone will provide a working source for COCO API in Windows and Python3
-
