@@ -5,7 +5,7 @@ Once the model is trained, it can be used in
 [IntelligentOCR](https://github.com/nevepura/IntelligentOCR)
 to detect tables.
 
-## General overview
+## Overview
 The project uses the pre-trained neural network 
 [offered](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
 by Tensorflow. In addition, a 
@@ -13,12 +13,8 @@ by Tensorflow. In addition, a
 file was used, according to the choosen pre-trained model, to train with 
 [object detections tensorflow API](https://github.com/tensorflow/models/tree/master/research/object_detection#tensorflow-object-detection-api)
 
-The datasets was taken from:
-* [TableBank](https://github.com/doc-analysis/TableBank).
-Only part of the dataset was used. Which part? The one contained in the folder "TableBank/TableBank_data/Detection_data", which had a proper annotation. The pictures from "Recognition_data" had no convenient annotations, since they are intended to understand the structure of a table, and not its frame. 
-Note that the dataset is not freely available, because copyright. If you want it, apply to request it on TableBank github page.
 
-## Required libraries
+## Requirements
 Before we go on make sure you have everything installed to be able to use the project:
 * Python 3
 * [Tensorflow](https://www.tensorflow.org/) (tested on r1.8)
@@ -27,20 +23,25 @@ Before we go on make sure you have everything installed to be able to use the pr
 * Pillow
 * opencv-python
 * pandas
-* pyprind (useful for process bars)
+* pyprind
 
 Notice: to complete the installation of the Coco API, you will have to clone the
 [tensorflow/models](https://github.com/tensorflow/models).
 This will also be useful later to train your model, since all the training files lie in tensorflow/models.
 
+if you missed any package, be safe with `pip install -r requirements.txt`.
 
-## Project pipeline
-The project is made up of different parts that acts together as a pipeline.
+## Dataset
+The dataset used is:
+* [TableBank](https://github.com/doc-analysis/TableBank).
+Only a subset of the dataset was used. Which one?
+The one contained in the folder `TableBank/TableBank_data/Detection_data`,
+which had a proper annotation.
+The other pictures from the `Recognition_data` folder had no convenient annotations,
+since they are intended to understand the structure of a table, and not its frame.
 
-###Disclaimer: on pictures and annotations
-The project hosted here contains the annotations, but not the pictures.
-It won't work unless you load the correct pictures, which are contained in the TableBank dataset, 
-in the folder `TableBank_data/Detection_data`.
+### Annotations
+
 In alternative, you can load your own dataset and your own annotations.
 Make sure that the annotations have the same format as the current ones.
 An example here:
@@ -58,12 +59,31 @@ An example here:
 Notice that the coordinates of the points come in this order:
 `x0, y0, x1, y0, x0, y1, x1, y1`
 
-#### Take confidence with costants
+#### Importing images
+The project hosted here contains the annotations, but not the pictures.
+The TableBank dataset is very big (around 25 GB) so it can't be stored here.
+So, to make it work, you have to load the correct pictures. How?
+
+First get the dataset from TableBank guys
+[here](https://github.com/doc-analysis/TableBank#get-data-and-leaderboard)
+Now, from the root folder of the TableBank archive, go to
+`TableBank_data/Detection_data`, both in the folders `data` and `latex`,
+and put them in this project at path `data/Images`
+Images in, you're ready to train!
+
+*Notice: the original dataset comes with the annotations in a different format,
+a big .json file. That was transformed in multiple .xml files for convenience. 
+If you wish, pick the .json labels and use this instead.*
+
+## Training
+The project is made up of different parts that acts together as a pipeline.
+
+### Take confidence with costants
 I have prepared two "costants" files: `dataset_costants.py` and `inference_constants.py`.
 The first contains all those costants that are useful to use to create dataset, the second to make
 inference with the frozen graph. If you just want to run the project you should modify only those two files.
  
-#### Transform the images from RGB to single-channel 8-bit grayscale jpeg images
+### Transform the images from RGB to single-channel 8-bit grayscale jpeg images
 Since colors are not useful for table detection, we can convert all the images in `.jpeg` 8-bit single channel images.
 [This](https://www.researchgate.net/publication/320243569_Table_Detection_Using_Deep_Learning))
 transformation is still under testing.
@@ -73,14 +93,6 @@ Use `python dataset/img_to_jpeg.py` after setting `dataset_costants.py`:
 * `IMAGES_EXTENSION`: extension of the extracted images. The only one tested is `.jpeg`.
 
 #### Prepare the dataset for Tensorflow
-The dataset was take from 
-[TableBank](https://github.com/doc-analysis/TableBank).
-It's a huge dataset apt to table detection (detect tables existance and borders)
-and table recognition (understand table structure, heading, cells and so on).
-It comes with a huge file of .json annotations: this has been transformed many .xml annotation files,
-equal to the old annotations of this project.
-The .xml filed are saved on Github. To get the images, see Step0 below.
-
 Tensorflow instead can build its own TFRecord from csv informations, so we need to convert
 the `xml` files into a `csv` one.
 Use `python dataset/generate_database_csv.py` to do this conversion after setting `dataset_costants.py`:
@@ -102,16 +114,6 @@ Use `python generate_tf_records.py` to create the train and test`.record` files 
 
 ### Train the network
 This part can be a little tricky. Let's divide it in steps.
-
-#### STEP 0: PUT IMAGES IN!
-The TableBank dataset is very big (around 25 GB) so it can't be stored here.
-Get the dataset from TableBank guys
-[here](https://github.com/doc-analysis/TableBank#get-data-and-leaderboard)
-Now, from the root folder of the TableBank archive, go to
-`TableBank_data/Detection_data`, both in the folders `data` and `latex`,
-and put them in this project at path
-`data/Images`
-Images in, you're ready to train!
 
 #### Step 1: importing a pre-trained model
 Look in [Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
