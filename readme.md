@@ -217,3 +217,11 @@ comment will probably solve your problem.
 ### Windows build and python3 support for COCO API dataset
 [This](https://github.com/philferriere/cocoapi)
 clone will provide a working source for COCO API in Windows and Python3
+
+### Metrics
+Metrics of the best network trained with TableTrain net: **Adam2_tb**
+In orange, the training set; in blue, the eval set
+![Detection boxes precition](https://i.imgur.com/IEzgL4a.png)
+![Detection boxes recall](https://i.imgur.com/nP5a3FS.png)
+![Learning rate](https://i.imgur.com/l1COxSe.png)
+![Loss](https://i.imgur.com/iPLtBy4.png)
