@@ -33,18 +33,22 @@ if you missed any package, be safe with `pip install -r requirements.txt`.
 
 ## Dataset
 The dataset used is:
-* [TableBank](https://github.com/doc-analysis/TableBank).
-Only a subset of the dataset was used. Which one?
+[TableBank](https://github.com/doc-analysis/TableBank). Have a read at the 
+[paper](https://arxiv.org/abs/1903.01949) if you want more information.\
+In our care, only a subset of the dataset was used. Which one? 
 The one contained in the folder `TableBank/TableBank_data/Detection_data`,
 which had a proper annotation.
-The other pictures from the `Recognition_data` folder had no convenient annotations,
-since they are intended to understand the structure of a table, and not its frame.
+The other pictures from the `Recognition_data` folder are intended to
+understand the structure of a table, like the position of header and cells,
+so it's not used here.
+
+*Notice: .  
+If you wish, pick the .json labels and use this instead.*
 
 ### Annotations
-
-In alternative, you can load your own dataset and your own annotations.
-Make sure that the annotations have the same format as the current ones.
-An example here:
+The original dataset comes into a big .json file.
+That was transformed in multiple .xml files for convenience.
+The annotations have the following.
 ```angular2html
 <?xml version='1.0' encoding='UTF-8'?>
 <document filename="1401.0007_15">
@@ -56,10 +60,10 @@ An example here:
   </tableRegion>
 </document>
 ```
-Notice that the coordinates of the points come in this order:
+The coordinates of the points are in this order:\
 `x0, y0, x1, y0, x0, y1, x1, y1`
 
-#### Importing images
+#### Images and how to get them
 The project hosted here contains the annotations, but not the pictures.
 The TableBank dataset is very big (around 25 GB) so it can't be stored here.
 So, to make it work, you have to load the correct pictures. How?
@@ -71,9 +75,26 @@ Now, from the root folder of the TableBank archive, go to
 and put them in this project at path `data/Images`
 Images in, you're ready to train!
 
-*Notice: the original dataset comes with the annotations in a different format,
-a big .json file. That was transformed in multiple .xml files for convenience. 
-If you wish, pick the .json labels and use this instead.*
+#### Alternatives to the TableBank dataset
+There are also other datasets around, smaller but easier to get.
+You can use any dataset you want and train your model with it.
+Just put the pictures (.jpg) and annotations (.xml, see the format above)
+in the folders
+```angular2
+dataset/Annotations
+dataset/Images
+```
+Some datasets or ways to gather them here:
+* [ICDAR2019](http://sac.founderit.com/)
+* [UNLV dataset](https://github.com/tesseract-ocr/tesseract/wiki/UNLV-Testing-of-Tesseract#downloading-the-images)
+* [UNLV ground truth](http://www.iapr-tc11.org/mediawiki/index.php?title=Table_Ground_Truth_for_the_UW3_and_UNLV_datasets)
+* [Marmot Dataset](http://www.icst.pku.edu.cn/cpdp/sjzy/index.htm)
+* [kaggle](https://www.kaggle.com/datasets)
+* [digitisation.eu](https://www.digitisation.eu/)
+* [IUPR](https://www.sites.google.com/a/iupr.com/bukhari/#downloads)
+* [NIST Datasets](https://www.nist.gov/srd/shop/special-database-catalog)
+* [PRImA Datasets](https://www.primaresearch.org/datasets)
+* [IUPR Dataset: camera captured document images](https://www.researchgate.net/publication/262294457_The_IUPR_Dataset_of_Camera-Captured_Document_Images)
 
 ## Training
 The project is made up of different parts that acts together as a pipeline.
@@ -92,7 +113,7 @@ Use `python dataset/img_to_jpeg.py` after setting `dataset_costants.py`:
 * `PATH_TO_IMAGES`: path/to/datase/images;
 * `IMAGES_EXTENSION`: extension of the extracted images. The only one tested is `.jpeg`.
 
-#### Prepare the dataset for Tensorflow
+### Prepare the dataset for Tensorflow
 Tensorflow instead can build its own TFRecord from csv informations, so we need to convert
 the `xml` files into a `csv` one.
 Use `python dataset/generate_database_csv.py` to do this conversion after setting `dataset_costants.py`:
@@ -107,7 +128,7 @@ Use `python dataset/generate_database_csv.py` to do this conversion after settin
 * `MIN_WIDTH_BOX`, `MIN_HEIGHT_BOX`: minimum dimension to consider a box valid;
 Some networks don't digest well little boxes, so I put this check.
 
-#### Generate TF records file
+### Generate TF records file
 `csv` files and images are ready: now we need to create our TF record file to feed Tensorflow.
 Use `python generate_tf_records.py` to create the train and test`.record` files that we will need later. No need to configure
 `dataset_costants.py`
@@ -187,7 +208,6 @@ numbers that tells the program which scores must be merged together.
 
 The procedure is better described in `inference_with_net.py`.
 For every execution a `.log` file will be produced and put in `logs`.
-
 
 ## Common issues while installing Tensorflow models
 ### TypeError: can't pickle dict_values objects
