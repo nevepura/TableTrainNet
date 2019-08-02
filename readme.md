@@ -99,18 +99,18 @@ Some networks don't digest well little boxes, so I put this check.
 Use `python generate_tf_records.py` to create the train and test`.record` files that we will need later. No need to configure
 `dataset_costants.py`
 
-#### Train the network
+### Train the network
 This part can be a little tricky. Let's divide it in steps.
 
 
-#####Step 1: importing a pre-trained model
+#### Step 1: importing a pre-trained model
 Look in [Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
 where there are pre-trained models for you to use.
 All the info about how to configure and start a model can be found
 [here](https://github.com/tensorflow/models/tree/master/research/object_detection)
 First of all, choose a model, download it and save it in the folder `trained_nets`, where are your pre-trained models will be.
 
-#####Step 2: create you model
+#### Step 2: create you model
 Go to trained_models and create a new folder with the name you prefer.
 Create two files inside it:
 * `command.txt`: here you will write the commands useful to start the training and export the graph
@@ -126,7 +126,7 @@ Other parameters can be chosen. It's not very clear how to do it: you can find l
 [here](https://github.com/tensorflow/models/tree/master/research/object_detection/protos)
 Once you've done your config, you can go to step 3.
 
-#####Step 3: train your network
+#### Step 3: train your network
 Write this command in the `command` file to reuse it. 
 Example of the command to launch from `tensorflow/models/research/object-detection`
 ```angular2html

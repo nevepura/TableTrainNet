@@ -15,16 +15,15 @@ class Singleton(type):
 class TimeHandler(metaclass=Singleton):
 	def __init__(self):
 		self.now = datetime.datetime.now()
-		self.h_file_name = \
-			'TableTrainNet-' + \
-			str(self.now.year) + "-" + \
-			str(self.now.month) + "-" + \
-			str(self.now.day) + "--" + \
-			str(self.now.hour) + "-" + \
-			str(self.now.minute) + "-" + \
-			str(self.now.second) + "--" + \
-			str(random.randint(0, 10000)) + '.log'
-		self.handler = self.return_handler(self.h_file_name)
+		self.file_name = \
+			"./logs/log_{}-{}-{}_{}-{}-{}.log".format( \
+				self.now.year, \
+				self.now.month, \
+				self.now.day, \
+				self.now.hour, \
+				self.now.minute, \
+				self.now.second)
+		self.handler = self.return_handler(self.file_name)
 
 	@staticmethod
 	def return_handler(log_name):
