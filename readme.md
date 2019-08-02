@@ -79,6 +79,7 @@ It's a huge dataset apt to table detection (detect tables existance and borders)
 and table recognition (understand table structure, heading, cells and so on).
 It comes with a huge file of .json annotations: this has been transformed many .xml annotation files,
 equal to the old annotations of this project.
+The .xml filed are saved on Github. To get the images, see Step0 below.
 
 Tensorflow instead can build its own TFRecord from csv informations, so we need to convert
 the `xml` files into a `csv` one.
@@ -102,6 +103,15 @@ Use `python generate_tf_records.py` to create the train and test`.record` files 
 ### Train the network
 This part can be a little tricky. Let's divide it in steps.
 
+#### STEP 0: PUT IMAGES IN!
+The TableBank dataset is very big (around 25 GB) so it can't be stored here.
+Get the dataset from TableBank guys
+[here](https://github.com/doc-analysis/TableBank#get-data-and-leaderboard)
+Now, from the root folder of the TableBank archive, go to
+`TableBank_data/Detection_data`, both in the folders `data` and `latex`,
+and put them in this project at path
+`data/Images`
+Images in, you're ready to train!
 
 #### Step 1: importing a pre-trained model
 Look in [Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
