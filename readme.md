@@ -61,7 +61,7 @@ The annotations have the following.
 </document>
 ```
 The coordinates of the points are in this order:\
-`x0, y0, x1, y0, x0, y1, x1, y1`
+`x0,y0  x1,y0   x0,y1   x1,y1`
 
 #### Images and how to get them
 The project hosted here contains the annotations, but not the pictures.
